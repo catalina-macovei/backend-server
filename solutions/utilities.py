@@ -34,6 +34,7 @@ int main() {
 
 
 # lista de teste
+# to do: o fct care primeste ca parametru fisierul de teste si returneaza lista
 test_cases = [
     {
         "input": [],
@@ -52,7 +53,7 @@ def write_code_to_file(code, filename): # mai tarziu rulez fisierul in linie de 
 def compile_cpp_code(filename):
     try:
         compilation_output = subprocess.check_output(
-            ["g++", "-std=c++14", filename, "-o", "my_cpp_program"],
+            ["g++", "-std=c++14", filename, "-o", "cpp_code"],
             stderr=subprocess.STDOUT,
             text=True
         )
@@ -128,7 +129,6 @@ def cleanup(lang):
 
 # logica rulare fisiere
 def execute_test_cases(code, test_cases, lang, commands):
-    lang = "python" # p/u testare schimbam numele in cpp / python
     if lang == "python":
         find_python_env()
         write_code_to_file(code, commands["python"]["filename"])
