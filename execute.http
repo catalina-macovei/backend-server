@@ -1,0 +1,12 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=PyCharm
+
+### Send POST request with json body
+POST http://localhost:8000/execute
+Content-Type: application/json
+
+{
+    "id": 1,
+    "solution": "print('Hello, world!')"
+}
