@@ -45,6 +45,23 @@ test_cases = [
     }
 ]
 
+def prepare_test_cases(test_cases_filename):
+    test_cases = []
+    with open(test_cases_filename, 'r') as file:
+        tests = file.read().strip("\n").split("#\n")
+        for test in tests:
+            if not test.find(">>\n"):
+                raise ValueError("wrong configuration of the test cases file")
+            split_test = test.split(">>\n")
+
+            test_cases.append(
+                {
+                    "input": split_test[0].strip("\n"),
+                    "output": split_test[1].strip("\n")
+                }
+            )
+    return test_cases
+
 def write_code_to_file(code, filename): # mai tarziu rulez fisierul in linie de comanda
     with open(filename, 'w') as file:
         file.write(code)

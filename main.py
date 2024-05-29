@@ -6,6 +6,7 @@ from solutions.utilities import *
 class Question(BaseModel): # obiectul Question mosteneste Base model (p/u serializarea datelor/validarea)
     id: int
     solution: str   # stocarea corpului functiei (codului de compilat de tip str)
+    test_cases_filename: str # denumirea fisierului cu test cases
 
 app = FastAPI()
 
@@ -19,6 +20,7 @@ async def execute_code(question: Question):
         function_code = question.solution
         print(function_code)
 
+        test_cases = prepare_test_cases()
         result = execute_test_cases(function_code, test_cases, "cpp", commands)
         print("received response here", result)
         res = 200
