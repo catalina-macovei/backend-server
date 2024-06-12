@@ -1,4 +1,4 @@
-import subprocess, sys, os
+import subprocess, sys, os, re
 
 # comenzile de executie in functie de limbaj
 commands = {
@@ -34,32 +34,36 @@ int main() {
 
 
 # lista de teste
-test_cases = [
-    {
-        "input": [],
-        "output": "Hello, world!\nThe sum of x and y is 15\n"
-    },
-    {
-        "input": [],
-        "output": "Hello, world!\nThe sum of x and y is 15\n"
-    }
-]
+# test_cases = [
+#     {
+#         "input": [],
+#         "output": "Hello, world!\nThe sum of x and y is 15\n"
+#     },
+#     {
+#         "input": [],
+#         "output": "Hello, world!\nThe sum of x and y is 15\n"
+#     }
+# ]
 
-def prepare_test_cases(test_cases_filename):
+# preia stringul cu test_cases, il parseaza si returneaza o lista de dictionare cu input si output pentru fiecare test
+def prepare_test_cases(test_cases_string):
     test_cases = []
-    with open(test_cases_filename, 'r') as file:
-        tests = file.read().strip("\n").split("#\n")
-        for test in tests:
-            if not test.find(">>\n"):
-                raise ValueError("wrong configuration of the test cases file")
-            split_test = test.split(">>\n")
-
-            test_cases.append(
-                {
-                    "input": split_test[0].strip("\n"),
-                    "output": split_test[1].strip("\n")
-                }
-            )
+    tests = re.split('[\r\n]*Test case #[0-9]+:\r\n', test_cases_string, flags=re.IGNORECASE)
+    print(tests)
+    for test in tests:
+        if len(test) == 0:
+            continue
+        m = re.match('Input\r\n(?P<inp>[^\r\n]+)\r\nOutput\r\n(?P<outp>[^\r\n]+)', test, flags=re.IGNORECASE)
+        if m is None:
+            raise ValueError('Invalid format of the test cases')
+        inp = re.split(r'[(\r\n) ]+', m.group('inp'))
+        outp = m.group('outp')
+        test_cases.append(
+            {
+                "input": inp,
+                "output": outp
+            }
+        )
     return test_cases
 
 def write_code_to_file(code, filename): # mai tarziu rulez fisierul in linie de comanda
@@ -69,7 +73,7 @@ def write_code_to_file(code, filename): # mai tarziu rulez fisierul in linie de 
 def compile_cpp_code(filename):
     try:
         compilation_output = subprocess.check_output(
-            ["g++", "-std=c++14", filename, "-o", "my_cpp_program"],
+            ["g++", "-std=c++14", filename, "-o", "cpp_code"],
             stderr=subprocess.STDOUT,
             text=True
         )
@@ -87,6 +91,7 @@ def execute_program(command, inputs):
             stderr=subprocess.PIPE,
             text=True
         )
+        print("input:\n" + "\n".join(inputs) + "\n")
         actual_output, _ = process.communicate(input="\n".join(inputs) + "\n")
         return actual_output
     except subprocess.CalledProcessError as e:
@@ -109,10 +114,11 @@ def find_python_env():
 def run_test_cases(test_cases, lang, commands):
     test_results = []
     for i, test_case in enumerate(test_cases):
+        print(test_case["input"])
         output = execute_program(commands[lang]["command"], test_case["input"])
         print(f"Test case #{i + 1}: {output}")
         # compar output de la expected si actual
-        if output == test_case["output"]:
+        if output.strip(' \r\n') == test_case["output"]:
             test_results.append((i + 1, True, output))
         else:
             test_results.append((i + 1, False, output, test_case["output"]))
@@ -145,7 +151,7 @@ def cleanup(lang):
 
 # logica rulare fisiere
 def execute_test_cases(code, test_cases, lang, commands):
-    lang = "python" # p/u testare schimbam numele in cpp / python
+    # lang = "python" # p/u testare schimbam numele in cpp / python
     if lang == "python":
         find_python_env()
         write_code_to_file(code, commands["python"]["filename"])
