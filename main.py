@@ -6,6 +6,8 @@ from solutions.utilities import *
 class Question(BaseModel): # obiectul Question mosteneste Base model (p/u serializarea datelor/validarea)
     id: int
     solution: str   # stocarea corpului functiei (codului de compilat de tip str)
+    lang: str
+    test_cases: str  # stringul cu test cases petru exercitiu
 
 app = FastAPI()
 
@@ -20,8 +22,9 @@ async def execute_code(question: Question):
         if not function_code:
             raise ValueError("No function code provided")
 
-        result = execute_test_cases(function_code, test_cases, "cpp", commands)
-        print("Received response:", result)
+        test_cases_obj = prepare_test_cases(question.test_cases)
+        result = execute_test_cases(function_code, test_cases_obj, question.lang, commands)
+        print("Received response", result)
 
         if not result:
             raise ValueError("Execution did not return any result")
