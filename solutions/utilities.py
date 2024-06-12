@@ -13,6 +13,7 @@ commands = {
 }
 
 # cod sursa:
+# p/u cod cu param , param se vor citi de la tastatura
 python_code = """
 print('Hello, world!')
 x = 5
@@ -100,7 +101,7 @@ def execute_program(command, inputs):
 # verific dc este python instalat
 def find_python_env():
     try:
-        subprocess.run(["python", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(["python", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # comunicarea interprocese, redirectare proces copil (python program) catre procesul parinte
     except (subprocess.CalledProcessError, FileNotFoundError):
         try:
             subprocess.run(["python3", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -112,16 +113,15 @@ def find_python_env():
 
 # rulez testele
 def run_test_cases(test_cases, lang, commands):
-    test_results = []
+    test_results = {}
     for i, test_case in enumerate(test_cases):
-        print(test_case["input"])
         output = execute_program(commands[lang]["command"], test_case["input"])
         print(f"Test case #{i + 1}: {output}")
         # compar output de la expected si actual
         if output.strip(' \r\n') == test_case["output"]:
-            test_results.append((i + 1, True, output))
+            test_results[str(i + 1)] = {"success": True, "output": output}
         else:
-            test_results.append((i + 1, False, output, test_case["output"]))
+            test_results[str(i + 1)] = {"success": False, "actual_output": output, "expected_output": test_case["output"]}
     return test_results
 
 def write_test_results(test_results, output_file_name):
@@ -152,15 +152,17 @@ def cleanup(lang):
 # logica rulare fisiere
 def execute_test_cases(code, test_cases, lang, commands):
     # lang = "python" # p/u testare schimbam numele in cpp / python
+    print("lang ",lang )
     if lang == "python":
         find_python_env()
         write_code_to_file(code, commands["python"]["filename"])
     elif lang == "cpp":
+        print("got in cpp execution!!")
         write_code_to_file(code, commands["cpp"]["filename"])
         compile_cpp_code(commands["cpp"]["filename"])  # codul cpp trebuie compilat
 
     test_results = run_test_cases(test_cases, lang, commands)
-    write_test_results(test_results, "../test_results.txt")
+    #write_test_results(test_results, "../test_results.txt")
     cleanup(lang)
 
     return test_results
