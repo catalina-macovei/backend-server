@@ -14,6 +14,7 @@ app = FastAPI()
 
 @app.post("/execute")
 async def execute_code(question: Question):
+    print(question)
     print(f"Executing solution for {question.id}")
     try:
         function_code = question.solution

@@ -12,40 +12,6 @@ commands = {
     }
 }
 
-# cod sursa:
-# p/u cod cu param , param se vor citi de la tastatura
-python_code = """
-print('Hello, world!')
-x = 5
-y = 10
-print(f'The sum of x and y is {x + y}')
-"""
-
-cpp_code = """
-#include <iostream>
-
-int main() {
-    std::cout << "Hello, world!" << std::endl;
-    int x = 5;
-    int y = 10;
-    std::cout << "The sum of x and y is " << x + y << std::endl;
-    return 0;
-}
-"""
-
-
-# lista de teste
-# test_cases = [
-#     {
-#         "input": [],
-#         "output": "Hello, world!\nThe sum of x and y is 15\n"
-#     },
-#     {
-#         "input": [],
-#         "output": "Hello, world!\nThe sum of x and y is 15\n"
-#     }
-# ]
-
 # preia stringul cu test_cases, il parseaza si returneaza o lista de dictionare cu input si output pentru fiecare test
 def prepare_test_cases(test_cases_string):
     test_cases = []
@@ -114,31 +80,30 @@ def find_python_env():
 # rulez testele
 def run_test_cases(test_cases, lang, commands):
     test_results = {}
+    passed_tests = 0  # counter pentru nr de teste trecute
+
     for i, test_case in enumerate(test_cases):
         output = execute_program(commands[lang]["command"], test_case["input"])
         print(f"Test case #{i + 1}: {output}")
-        # compar output de la expected si actual
+        # Compare output with expected output
         if output.strip(' \r\n') == test_case["output"]:
             test_results[str(i + 1)] = {"success": True, "output": output}
+            passed_tests += 1  # Increment the count of passed tests
         else:
             test_results[str(i + 1)] = {"success": False, "actual_output": output, "expected_output": test_case["output"]}
-    return test_results
 
-def write_test_results(test_results, output_file_name):
-    with open(output_file_name, "w") as output_file:
-        for result in test_results:
-            if result[1]:
-                print(f"Test {result[0]}: PASSED")
-                output_file.write(f"Test {result[0]}: PASSED\n")
-            else:
-                print(f"Test {result[0]}: FAILED")
-                print(f"Expected: {result[3]}")
-                print(f"Actual: {result[2]}")
-                output_file.write(f"Test {result[0]}: FAILED\n")
-                output_file.write(f"Expected: {result[3]}\n")
-                output_file.write(f"Actual: {result[2]}\n")
+    # Calculez scorul in functie de testele trecute
+    total_tests = len(test_cases)
+    if total_tests > 0:
+        passed_percentage = (passed_tests / total_tests) * 100
+    else:
+        passed_percentage = 0
+    return {
+        "test_results": test_results,
+        "score": passed_percentage
+    }
 
-# Clean up
+# Clean up - stergere fisiere py, cpp
 def cleanup(lang):
     if lang == "python":
         if os.path.exists(commands["python"]["filename"]):
@@ -152,17 +117,14 @@ def cleanup(lang):
 # logica rulare fisiere
 def execute_test_cases(code, test_cases, lang, commands):
     # lang = "python" # p/u testare schimbam numele in cpp / python
-    print("lang ",lang )
     if lang == "python":
         find_python_env()
         write_code_to_file(code, commands["python"]["filename"])
     elif lang == "cpp":
-        print("got in cpp execution!!")
         write_code_to_file(code, commands["cpp"]["filename"])
         compile_cpp_code(commands["cpp"]["filename"])  # codul cpp trebuie compilat
 
     test_results = run_test_cases(test_cases, lang, commands)
-    #write_test_results(test_results, "../test_results.txt")
     cleanup(lang)
 
     return test_results
