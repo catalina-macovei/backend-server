@@ -65,3 +65,5 @@ archive.zip
 
 # txt
 *.txt
+
+.env

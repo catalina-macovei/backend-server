@@ -2,7 +2,7 @@
 GET https://examples.http-client.intellij.net/get
     ?generated-in=PyCharm
 
-### Send POST request with json body
+### Send POST request with json body - for testing purpose
 POST http://localhost:8000/execute
 Content-Type: application/json
 
